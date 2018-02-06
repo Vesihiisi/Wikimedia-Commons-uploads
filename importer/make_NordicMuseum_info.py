@@ -161,8 +161,6 @@ class NMInfo(MakeBaseInfo):
         template_data['title'] = item.get_title()
         template_data['description'] = item.get_description()
         template_data['original description'] = item.get_original_description()
-        template_data['depicted people'] = item.get_depicted_object(
-            typ='person')
         template_data['depicted place'] = item.get_depicted_place()
         template_data['date'] = item.get_creation_date()
         template_data['medium'] = item.get_materials()
@@ -600,10 +598,11 @@ class NMItem(object):
 
     def make_place_category(self):
         """Add a the most specific geo category."""
-        for geo_cat in self.geo_data.get('commonscats'):
-            if self.nm_info.category_exists(geo_cat):
-                self.content_cats.add(geo_cat)
-                return True
+        if self.geo_data.get('commonscats'):
+            for geo_cat in self.geo_data.get('commonscats'):
+                if self.nm_info.category_exists(geo_cat):
+                    self.content_cats.add(geo_cat)
+                    return True
 
         # no geo cats found
         self.meta_cats.add('needing categorisation (place)')
@@ -629,12 +628,13 @@ class NMItem(object):
             for cat in keyword_map[keyword]:
                 match_on_first = True
                 found_testcat = False
-                for place_cat in self.geo_data.get('commonscats'):
-                    found_testcat = self.try_cat_patterns(
-                        cat, place_cat, match_on_first)
-                    if found_testcat:
-                        break
-                    match_on_first = False
+                if self.geo_data.get('commonscats'):
+                    for place_cat in self.geo_data.get('commonscats'):
+                        found_testcat = self.try_cat_patterns(
+                            cat, place_cat, match_on_first)
+                        if found_testcat:
+                            break
+                        match_on_first = False
                 if not found_testcat and self.nm_info.category_exists(cat):
                     self.content_cats.add(cat)
 
